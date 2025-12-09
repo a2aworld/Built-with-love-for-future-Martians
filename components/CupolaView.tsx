@@ -22,11 +22,21 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
   const [sliderPosition, setSliderPosition] = useState(50); // 0 to 100%
   const [artistOpacity, setArtistOpacity] = useState(100); // 0 to 100%
 
-  // Science/Survey State
-  const [interactionCount, setInteractionCount] = useState(0);
-  const [showSurvey, setShowSurvey] = useState(false);
-  const [surveyState, setSurveyState] = useState<'idle' | 'voting' | 'submitted'>('idle');
-  const [voteChoice, setVoteChoice] = useState<'yes' | 'no' | null>(null);
+  // Mobile Detection for Zoom Adjustment
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Check initially
+    handleResize();
+
+    // Add listener
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Base URL for the artist's map
   const artistBaseUrl = `https://www.google.com/maps/d/embed?mid=${datasetId}&ehbc=2E312F`;
@@ -37,10 +47,6 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
   useEffect(() => {
     // Trigger loading state whenever coordinates change
     setIsLoading(true);
-    // Reset survey state on new node selection to allow re-evaluation
-    setInteractionCount(0);
-    setShowSurvey(false);
-    setSurveyState('idle');
 
     let targetLat = 0;
     let targetLng = 0;
@@ -50,6 +56,11 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
       targetLat = selectedLat;
       targetLng = selectedLng;
       zoom = selectedZoom || 6; 
+      
+      // MOBILE FIX: Pull the camera back on small screens so large shapes (like Ganesha) fit.
+      if (isMobile) {
+          zoom = Math.max(2, zoom - 1.5); 
+      }
     } else {
       targetLat = 20;
       targetLng = 0;
@@ -68,34 +79,21 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
     const timer = setTimeout(() => setIsLoading(false), 3000);
     return () => clearTimeout(timer);
     
-  }, [selectedLat, selectedLng, selectedZoom, datasetId]);
+  }, [selectedLat, selectedLng, selectedZoom, datasetId, isMobile]);
 
   const handleIframeLoad = () => {
       // Give it a split second more for tiles to render, then fade out loader
       setTimeout(() => setIsLoading(false), 500);
   };
 
-  const handleSliderInteractionEnd = () => {
-      // Only count interactions if we haven't already voted for this location
-      if (surveyState !== 'idle') return;
-
-      const newCount = interactionCount + 1;
-      setInteractionCount(newCount);
-
-      // Trigger the "Aha!" moment after 3 meaningful interactions
-      if (newCount === 3) {
-          setShowSurvey(true);
-          setSurveyState('voting');
-      }
-  };
-
-  const handleVote = (vote: 'yes' | 'no') => {
-      setVoteChoice(vote);
-      setSurveyState('submitted');
-      // Hide the survey UI after a delay
-      setTimeout(() => {
-          setShowSurvey(false);
-      }, 3000);
+  // Header Crop Style: Pushes the map up to hide the Google Header
+  const cropHeaderStyle: React.CSSProperties = {
+      border: 0,
+      width: '100%',
+      // Add extra height to compensate for the negative margin
+      height: 'calc(100% + 60px)', 
+      // Pull the iframe up to hide the top header bar
+      marginTop: '-60px' 
   };
 
   return (
@@ -121,13 +119,11 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
       </div>
 
       {/* --- LAYER 1: BASE SATELLITE (The "Real" World) --- */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
          <iframe 
-            key="sat-layer"
+            key={`sat-layer-${isMobile ? 'mob' : 'desk'}`} // Key change forces reload on resize to apply new zoom
             src={satelliteMapUrl}
-            width="100%" 
-            height="100%" 
-            style={{ border: 0, filter: 'contrast(1.05) saturate(0.9)' }}
+            style={{ ...cropHeaderStyle, filter: 'contrast(1.05) saturate(0.9)' }}
             allowFullScreen
             title="Satellite View"
         ></iframe>
@@ -135,18 +131,16 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
 
       {/* --- LAYER 2: ARTIST OVERLAY (The "Heaven on Earth" Vision) --- */}
       <div 
-        className="absolute inset-0 z-10 pointer-events-none transition-opacity duration-300"
+        className="absolute inset-0 z-10 pointer-events-none transition-opacity duration-300 overflow-hidden"
         style={{ 
             clipPath: `inset(0 ${100 - sliderPosition}% 0 0)`, // The Reveal Magic
             opacity: artistOpacity / 100
         }}
       >
          <iframe 
-            key="artist-layer"
+            key={`artist-layer-${isMobile ? 'mob' : 'desk'}`}
             src={artistMapUrl}
-            width="100%" 
-            height="100%" 
-            style={{ border: 0 }}
+            style={cropHeaderStyle}
             allowFullScreen
             title="Artist Overlay"
             onLoad={handleIframeLoad}
@@ -171,96 +165,30 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
         max="100" 
         value={sliderPosition} 
         onChange={(e) => setSliderPosition(parseInt(e.target.value))}
-        onMouseUp={handleSliderInteractionEnd}
-        onTouchEnd={handleSliderInteractionEnd}
         className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-40" 
-        title="Drag to Compare"
+        title="Drag to Reveal"
       />
 
-      {/* --- CROWDSOURCED SCIENCE SURVEY --- */}
-      {showSurvey && (
-          <div className="absolute inset-0 z-[120] flex items-center justify-center pointer-events-none">
-              <div className="bg-slate-900/95 backdrop-blur-xl border border-gold-500/30 p-8 rounded-lg shadow-2xl max-w-sm text-center pointer-events-auto animate-fade-in">
-                  
-                  {surveyState === 'voting' ? (
-                      <>
-                        <div className="mb-4">
-                            <span className="text-gold-500 text-xs font-mono tracking-widest uppercase">Visual Confirmation Protocol</span>
-                        </div>
-                        <h2 className="text-2xl font-serif text-paper-100 mb-6 font-bold">
-                            Do You See It?
-                        </h2>
-                        <div className="flex gap-4 justify-center">
-                            <button 
-                                onClick={() => handleVote('yes')}
-                                className="px-6 py-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/50 text-green-400 rounded hover:scale-105 transition-all font-mono text-sm uppercase"
-                            >
-                                YES
-                            </button>
-                            <button 
-                                onClick={() => handleVote('no')}
-                                className="px-6 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/50 text-red-400 rounded hover:scale-105 transition-all font-mono text-sm uppercase"
-                            >
-                                NO
-                            </button>
-                        </div>
-                      </>
-                  ) : (
-                      <div className="py-4">
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 ${voteChoice === 'yes' ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'}`}>
-                              {voteChoice === 'yes' ? (
-                                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                              ) : (
-                                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                              )}
-                          </div>
-                          <h3 className="text-lg font-serif text-paper-100 mb-2">
-                              {voteChoice === 'yes' ? 'Pattern Confirmed' : 'Divergence Recorded'}
-                          </h3>
-                          <p className="text-xs text-slate-400 font-sans tracking-wide">
-                              Adding data to the Global Consensus...
-                          </p>
-                      </div>
-                  )}
-              </div>
-          </div>
-      )}
-
-      {/* --- CONTROLS OVERLAY (Bottom Right) --- */}
-      {/* z-[100] ensures this sits ON TOP of everything. stopPropagation prevents slider drag. */}
+      {/* --- MINIMALIST CONTROLS (Bottom Right) --- */}
+      {/* Replaced bulky panel with sleek individual sliders */}
       <div 
-        className="absolute bottom-6 right-6 z-[100] flex flex-col gap-2 items-end pointer-events-auto"
+        className="absolute bottom-4 right-4 z-[100] flex flex-col gap-1 items-end pointer-events-auto"
         onMouseDown={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
       >
-          
-          <div className="bg-slate-900/90 backdrop-blur border border-slate-700 p-4 rounded shadow-xl w-56">
-              <div className="text-[9px] font-sans text-gold-500 mb-3 uppercase tracking-widest font-bold border-b border-slate-700 pb-2">
-                  Layer Control
-              </div>
-              
-              <div className="space-y-4">
-                  <div className="flex justify-between text-[9px] text-slate-400 font-sans tracking-wide">
-                      <span>NARRATIVE MAP</span>
-                      <span>SATELLITE</span>
-                  </div>
-
-                  {/* Opacity Control */}
-                  <div className="flex flex-col gap-1.5">
-                      <div className="flex justify-between text-[9px] text-slate-300">
-                          <span>Map Opacity</span>
-                          <span>{artistOpacity}%</span>
-                      </div>
-                      <input 
-                        type="range" 
-                        min="0" 
-                        max="100" 
-                        value={artistOpacity}
-                        onChange={(e) => setArtistOpacity(parseInt(e.target.value))}
-                        className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-gold-500 relative z-[101]"
-                      />
-                  </div>
-              </div>
+          <div className="bg-slate-900/80 backdrop-blur-md border border-slate-600/50 rounded-full px-3 py-2 flex items-center gap-3 shadow-lg group hover:bg-slate-900 transition-colors">
+              <span className="text-[9px] text-gold-500 font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-300 absolute right-full mr-3 whitespace-nowrap">
+                  Overlay Opacity
+              </span>
+              <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+              <input 
+                type="range" 
+                min="0" 
+                max="100" 
+                value={artistOpacity}
+                onChange={(e) => setArtistOpacity(parseInt(e.target.value))}
+                className="w-24 h-1 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-gold-500"
+              />
           </div>
       </div>
 
@@ -273,21 +201,6 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
          </div>
       </div>
 
-      {/* HUD Elements - Static Coordinates */}
-      {selectedLat !== undefined && (
-        <div className="absolute top-4 right-4 text-right pointer-events-auto z-50">
-            <div className="inline-block bg-slate-900/80 backdrop-blur border border-slate-700 p-2 rounded text-slate-300 font-mono text-[10px]">
-                <div className="flex items-center justify-end gap-2 mb-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                    <span className="tracking-widest">LIVE FEED</span>
-                </div>
-                <div className="text-slate-400">
-                    LAT: {selectedLat.toFixed(5)}<br/>
-                    LNG: {selectedLng?.toFixed(5)}
-                </div>
-            </div>
-        </div>
-      )}
     </div>
   );
 };
