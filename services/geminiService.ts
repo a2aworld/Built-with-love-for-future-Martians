@@ -5,46 +5,31 @@ import { StoryNode, AgentResponse } from "../types";
 
 /**
  * Service singleton for the Google Gemini API client.
- * Initialized only after the user selects their API key via the AI Studio overlay.
+ * In Production/Public mode, this relies on the environment variable being set
+ * in the deployment platform (e.g., Google Cloud Run, Vercel).
  */
 let client: GoogleGenAI | null = null;
 
 /**
  * Initializes the Gemini API client using the environment's injected API key.
- * This function handles the handshake with the hackathon environment.
  * 
- * @returns {Promise<boolean>} True if initialization was successful, false otherwise.
+ * @returns {boolean} True if initialization was successful, false otherwise.
  */
-export const initializeGemini = async (): Promise<boolean> => {
+export const initializeGemini = (): boolean => {
   try {
-    // @ts-ignore - window.aistudio is injected by the hackathon environment
-    if (window.aistudio && window.aistudio.hasSelectedApiKey) {
-      // @ts-ignore
-      const hasKey = await window.aistudio.hasSelectedApiKey();
-      if (hasKey) {
-        // @ts-ignore
-        client = new GoogleGenAI({ apiKey: process.env.API_KEY }); 
-        return true;
-      }
+    // In a deployed environment, process.env.API_KEY must be defined
+    // in the build settings or runtime environment variables.
+    if (process.env.API_KEY) {
+      client = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      return true;
     }
+    
+    console.warn("Gemini API Key is missing. Please check your deployment environment variables.");
     return false;
   } catch (e) {
     console.error("Failed to initialize Gemini client", e);
     return false;
   }
-};
-
-/**
- * Triggers the AI Studio key selection dialog.
- * This is required for the application to function in the hackathon environment.
- */
-export const promptSelectKey = async () => {
-   // @ts-ignore
-   if (window.aistudio && window.aistudio.openSelectKey) {
-      // @ts-ignore
-      await window.aistudio.openSelectKey();
-      await initializeGemini();
-   }
 };
 
 /**
@@ -55,7 +40,10 @@ export const promptSelectKey = async () => {
  * @returns {Promise<string>} The generated narrative text.
  */
 const generateText = async (node: StoryNode): Promise<string> => {
-    if (!client) throw new Error("Gemini client not initialized");
+    if (!client) {
+       const success = initializeGemini();
+       if (!success) return "Connection Lost. Please contact Mission Control (Check API_KEY configuration).";
+    }
     
     const prompt = `
     Target: ${node.title}
@@ -67,16 +55,22 @@ const generateText = async (node: StoryNode): Promise<string> => {
     Recite the ancient tale. Preserve the heritage.
     `;
 
-    const response = await client.models.generateContent({
-      model: 'gemini-3-pro-preview', // User requested Gemini 3 Pro
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 0.7, // Slightly lower temperature for more faithful retelling
-      },
-      contents: prompt,
-    });
-    
-    return response.text || "Accessing Archive...";
+    try {
+        // @ts-ignore
+        const response = await client.models.generateContent({
+          model: 'gemini-3-pro-preview', // User requested Gemini 3 Pro
+          config: {
+            systemInstruction: SYSTEM_INSTRUCTION,
+            temperature: 0.7, 
+          },
+          contents: prompt,
+        });
+        
+        return response.text || "The Archives are silent.";
+    } catch (e) {
+        console.error("Text Generation Error:", e);
+        return "Transmission Interrupted.";
+    }
 };
 
 /**
@@ -107,6 +101,7 @@ const generateImage = async (node: StoryNode): Promise<string | undefined> => {
     `;
 
     try {
+        // @ts-ignore
         const response = await client.models.generateContent({
             model: 'gemini-3-pro-image-preview', // High quality image generation
             contents: {
@@ -121,6 +116,7 @@ const generateImage = async (node: StoryNode): Promise<string | undefined> => {
         });
 
         // Extract image data from the response parts
+        // @ts-ignore
         for (const part of response.candidates?.[0]?.content?.parts || []) {
             if (part.inlineData) {
                 return `data:image/png;base64,${part.inlineData.data}`;
@@ -142,8 +138,13 @@ const generateImage = async (node: StoryNode): Promise<string | undefined> => {
  */
 export const generateStoryResponse = async (node: StoryNode): Promise<AgentResponse> => {
   if (!client) {
-    const success = await initializeGemini();
-    if (!success) throw new Error("API Key not selected");
+    const success = initializeGemini();
+    if (!success) {
+        return {
+            text: "System Alert: API Key not detected in environment variables. Please configure the satellite uplink.",
+            emotionalTone: 'Analytical'
+        };
+    }
   }
 
   // Parallel execution to minimize latency

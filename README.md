@@ -20,17 +20,6 @@ By overlaying ancient mythological narratives onto high-resolution Earth observa
 *   **Geospatial**: Google Maps Embed API, Custom "Chronoscope" Dual-Layer Rendering
 *   **Audio**: Web Speech API for auto-narration
 
-## 🏗️ Architecture
-
-The application operates as a **Serverless Single-Page Application (SPA)**. This architectural choice ensures maximum reliability in disconnected or high-latency environments (like Mars orbit).
-
-1.  **Geospatial Viewport**: A custom React component that renders two synchronized map layers.
-    *   *Bottom Layer*: Satellite Telemetry (Reality).
-    *   *Top Layer*: The Artist's Vision (Mythology).
-    *   *Chronoscope Slider*: Allows the user to peel back reality to reveal the narrative.
-2.  **Narrative Engine**: A specialized AI persona driven by Gemini 3 Pro. It acts as a museum docent, reciting ancient tales with high fidelity.
-3.  **Data Nexus**: A hardcoded, curated graph of "Story Nodes" representing validated geomythological correlations.
-
 ## 📦 Installation & Setup
 
 1.  **Clone the Repository**
@@ -44,10 +33,26 @@ The application operates as a **Serverless Single-Page Application (SPA)**. This
     npm install
     ```
 
-3.  **Launch Mission Control**
+3.  **Configure API Key**
+    Create a `.env` file in the root directory:
+    ```
+    API_KEY=your_google_gemini_api_key_here
+    ```
+
+4.  **Launch Mission Control**
     ```bash
     npm start
     ```
+
+## ☁️ Deployment (Google Cloud Run / Vercel)
+
+To deploy this application publicly so others can use it without needing their own key:
+
+1.  **Set Environment Variables**: You **MUST** set the `API_KEY` environment variable in your cloud provider's dashboard.
+    *   **Google Cloud Run**: Go to "Edit & Deploy New Revision" -> "Variables & Secrets" -> Add `API_KEY`.
+    *   **Vercel/Netlify**: Go to "Project Settings" -> "Environment Variables" -> Add `API_KEY`.
+
+2.  **Deploy**: The application detects the key automatically and creates a seamless experience for the user.
 
 ## 📜 License
 

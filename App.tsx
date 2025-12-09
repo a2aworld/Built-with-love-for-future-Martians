@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { DataPanel } from './components/DataPanel';
 import { AgentInterface } from './components/AgentInterface';
 import { CupolaView } from './components/CupolaView';
-import { promptSelectKey, generateStoryResponse } from './services/geminiService';
+import { generateStoryResponse } from './services/geminiService';
 import { StoryNode } from './types';
 import { STORY_NODES } from './constants';
 
@@ -20,25 +20,8 @@ function App() {
   const [selectedNode, setSelectedNode] = useState<StoryNode | null>(null);
   const [messages, setMessages] = useState<{ role: 'user' | 'ai'; text: string; imageUrl?: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKeyReady, setApiKeyReady] = useState(false);
   const hasInitialized = useRef(false);
   
-  // Initial API Key Check for the Hackathon Environment
-  useEffect(() => {
-    const checkKey = async () => {
-        // @ts-ignore
-       if (window.aistudio && window.aistudio.hasSelectedApiKey) {
-         // @ts-ignore
-         const has = await window.aistudio.hasSelectedApiKey();
-         setApiKeyReady(has);
-       } else {
-         // Fallback for local dev or if the API isn't present
-         setApiKeyReady(true); 
-       }
-    };
-    checkKey();
-  }, []);
-
   // AUTO-BOOT SEQUENCE: Load Ganesha immediately
   useEffect(() => {
     if (!hasInitialized.current && STORY_NODES.length > 0) {
@@ -47,11 +30,6 @@ function App() {
         handleNodeSelect(STORY_NODES[0]);
     }
   }, []);
-
-  const handleSelectKey = async () => {
-    await promptSelectKey();
-    setApiKeyReady(true);
-  };
 
   // Main interaction handler: User clicks a map node
   const handleNodeSelect = async (node: StoryNode) => {
@@ -114,15 +92,11 @@ function App() {
                      </span>
                 </div>
             </div>
-
-            {!apiKeyReady && (
-                <button 
-                    onClick={handleSelectKey}
-                    className="bg-gold-500 hover:bg-gold-400 text-slate-900 font-semibold text-xs px-4 py-2 rounded shadow-md transition-all"
-                >
-                    CONNECT KEY
-                </button>
-            )}
+            
+            <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">System Online</span>
+            </div>
         </div>
 
         {/* Middle Layer: Map and Agent */}
