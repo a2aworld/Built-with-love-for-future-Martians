@@ -83,6 +83,14 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ messages, isLoad
                 : 'bg-gold-500/10 text-gold-500 border border-gold-500/20'
             }`}
         >
+             {/* Speaker Icon */}
+             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+                {isMuted ? (
+                    <path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM12.293 7.293a1 1 0 011.414 0L15 8.586l1.293-1.293a1 1 0 111.414 1.414L16.414 10l1.293 1.293a1 1 0 01-1.414 1.414L15 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L13.586 10l-1.293-1.293a1 1 0 010-1.414z" />
+                ) : (
+                    <path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" />
+                )}
+             </svg>
              {isMuted ? 'Muted' : (isSpeaking ? 'Speaking...' : 'Audio On')}
         </button>
       </div>
@@ -90,14 +98,14 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ messages, isLoad
       {/* Messages Area */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-8">
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-center text-slate-500 px-4">
+          <div className="flex flex-col items-center justify-center h-full text-center text-slate-500 px-8">
              <div className="w-16 h-16 border-2 border-slate-600 rounded-full flex items-center justify-center mb-6">
                  <span className="text-2xl font-serif text-gold-500">A2A</span>
              </div>
-             <p className="font-serif text-sm text-slate-300 leading-relaxed max-w-sm">
-                An Open Source MVP Proof of Concept demonstrating a novel methodology for encoding human heritage onto the planetary surface to preserve our shared human story.
+             <p className="font-serif text-sm text-slate-300 leading-relaxed max-w-md italic border-l-2 border-gold-500 pl-4">
+                "An Open Source MVP Proof of Concept demonstrating a novel methodology for encoding human heritage onto the planetary surface, preserving our shared human story for future generations."
              </p>
-             <p className="text-[10px] font-sans mt-4 text-slate-500 tracking-widest uppercase">Initializing Archive...</p>
+             <p className="text-[10px] font-sans mt-6 text-slate-500 tracking-widest uppercase animate-pulse">Initializing Neural Link...</p>
           </div>
         )}
         
@@ -123,7 +131,7 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ messages, isLoad
 
             {/* Generated Image (AI only) */}
             {msg.imageUrl && (
-                <div className="mt-4 max-w-[95%] w-full rounded shadow-md overflow-hidden border border-slate-700/50 bg-black relative">
+                <div className="mt-4 max-w-[95%] w-full rounded shadow-md overflow-hidden border border-slate-700/50 bg-black relative animate-fade-in">
                     <div className="absolute top-3 left-3 bg-black/60 backdrop-blur px-2 py-1 text-[9px] text-white/80 font-sans tracking-widest uppercase rounded-sm border border-white/10">
                         Fig 1.1: Iconographic Reconstruction
                     </div>

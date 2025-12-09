@@ -43,10 +43,8 @@ function App() {
   useEffect(() => {
     if (!hasInitialized.current && STORY_NODES.length > 0) {
         hasInitialized.current = true;
-        // Small delay to ensure UI is ready before triggering the heavy lift
-        setTimeout(() => {
-            handleNodeSelect(STORY_NODES[0]);
-        }, 500);
+        // Trigger Ganesha immediately
+        handleNodeSelect(STORY_NODES[0]);
     }
   }, []);
 
@@ -77,7 +75,6 @@ function App() {
       }]);
     } catch (error) {
       setMessages(prev => [...prev, { role: 'ai', text: "Error accessing the Archive. Please verify API connection." }]);
-      // Don't disable key readiness on error, might just be a glitch
     } finally {
       setIsLoading(false);
     }
@@ -113,7 +110,7 @@ function App() {
                 <div className="hidden sm:flex flex-col">
                      <span className="text-[10px] font-mono text-slate-500 uppercase">Active Target</span>
                      <span className="text-xs font-medium text-paper-100">
-                        {selectedNode ? selectedNode.title.toUpperCase() : 'INITIALIZING...'}
+                        {selectedNode ? selectedNode.title.toUpperCase() : 'INITIALIZING SYSTEM...'}
                      </span>
                 </div>
             </div>
