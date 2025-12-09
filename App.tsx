@@ -1,10 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DataPanel } from './components/DataPanel';
 import { AgentInterface } from './components/AgentInterface';
 import { CupolaView } from './components/CupolaView';
 import { promptSelectKey, generateStoryResponse } from './services/geminiService';
 import { StoryNode } from './types';
+import { STORY_NODES } from './constants';
 
 /**
  * Main Application Component.
@@ -20,6 +21,7 @@ function App() {
   const [messages, setMessages] = useState<{ role: 'user' | 'ai'; text: string; imageUrl?: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [apiKeyReady, setApiKeyReady] = useState(false);
+  const hasInitialized = useRef(false);
   
   // Initial API Key Check for the Hackathon Environment
   useEffect(() => {
@@ -37,6 +39,17 @@ function App() {
     checkKey();
   }, []);
 
+  // AUTO-BOOT SEQUENCE: Load Ganesha immediately
+  useEffect(() => {
+    if (!hasInitialized.current && STORY_NODES.length > 0) {
+        hasInitialized.current = true;
+        // Small delay to ensure UI is ready before triggering the heavy lift
+        setTimeout(() => {
+            handleNodeSelect(STORY_NODES[0]);
+        }, 500);
+    }
+  }, []);
+
   const handleSelectKey = async () => {
     await promptSelectKey();
     setApiKeyReady(true);
@@ -47,7 +60,7 @@ function App() {
     setSelectedNode(node);
     
     // 1. Add User "Command" to chat
-    const userMsg = `Accessing Archive: ${node.title} [${node.coordinates.lat.toFixed(2)}, ${node.coordinates.lng.toFixed(2)}]`;
+    const userMsg = `Retrieving Record: ${node.title} \nCoordinates: [${node.coordinates.lat.toFixed(4)}, ${node.coordinates.lng.toFixed(4)}]`;
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     
     setIsLoading(true);
@@ -63,25 +76,21 @@ function App() {
           imageUrl: response.imageUrl
       }]);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'ai', text: "Error accessing the Storybook. Please verify uplink (API Key)." }]);
-      setApiKeyReady(false);
+      setMessages(prev => [...prev, { role: 'ai', text: "Error accessing the Archive. Please verify API connection." }]);
+      // Don't disable key readiness on error, might just be a glitch
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-space-900 text-starlight relative">
+    <div className="flex h-screen w-screen overflow-hidden bg-slate-900 text-paper-200 relative font-sans">
       
-      {/* Background Starfield effect */}
-      <div className="absolute inset-0 pointer-events-none z-0 opacity-30" style={{
-        backgroundImage: 'radial-gradient(white 1px, transparent 1px), radial-gradient(#d4af37 1px, transparent 1px)',
-        backgroundSize: '50px 50px, 100px 100px',
-        backgroundPosition: '0 0, 25px 25px'
-      }}></div>
+      {/* Background: Subtle Professional Gradient */}
+      <div className="absolute inset-0 pointer-events-none z-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"></div>
 
       {/* Sidebar: Data Selection */}
-      <div className="z-10 h-full hidden md:block">
+      <div className="z-10 h-full hidden md:block border-r border-slate-700/50 shadow-xl">
         <DataPanel 
           onSelectNode={handleNodeSelect} 
           selectedNodeId={selectedNode?.id || null} 
@@ -89,40 +98,49 @@ function App() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col h-full relative z-10 p-2 md:p-4 gap-4">
+      <div className="flex-1 flex flex-col h-full relative z-10 p-2 md:p-6 gap-6">
         
-        {/* Top Bar / Mission Status */}
-        <div className="flex justify-between items-center bg-black/40 p-2 rounded border border-space-700 backdrop-blur-sm">
-            <div className="flex items-center gap-4">
-                <div className="font-mono text-xs text-a2a-accent pl-2">
-                    MISSION: HERITAGE PRESERVATION
+        {/* Top Bar / Research Header */}
+        <div className="flex justify-between items-center bg-slate-800/80 p-3 rounded-lg border border-slate-700/50 backdrop-blur-md shadow-sm">
+            <div className="flex items-center gap-6">
+                <div className="flex flex-col">
+                    <span className="font-serif text-lg text-gold-500 font-bold tracking-wide">GALACTIC STORYBOOK</span>
+                    <span className="font-sans text-[10px] text-slate-400 tracking-wider uppercase">Planetary Heritage Archive V.1.0</span>
                 </div>
-                <div className="text-xs font-mono text-gray-400">
-                     TARGET: {selectedNode ? selectedNode.title.toUpperCase() : 'AWAITING INPUT'}
+                
+                <div className="h-8 w-px bg-slate-600/50 hidden sm:block"></div>
+
+                <div className="hidden sm:flex flex-col">
+                     <span className="text-[10px] font-mono text-slate-500 uppercase">Active Target</span>
+                     <span className="text-xs font-medium text-paper-100">
+                        {selectedNode ? selectedNode.title.toUpperCase() : 'INITIALIZING...'}
+                     </span>
                 </div>
             </div>
 
             {!apiKeyReady && (
                 <button 
                     onClick={handleSelectKey}
-                    className="bg-a2a-gold text-space-900 font-bold text-xs px-3 py-1 rounded hover:bg-white transition-colors"
+                    className="bg-gold-500 hover:bg-gold-400 text-slate-900 font-semibold text-xs px-4 py-2 rounded shadow-md transition-all"
                 >
-                    CONNECT API KEY
+                    CONNECT KEY
                 </button>
             )}
         </div>
 
         {/* Middle Layer: Map and Agent */}
-        <div className="flex-1 flex flex-col lg:flex-row gap-4 min-h-0">
+        <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0">
             
             {/* The Cupola View (The Artist's Vision + Map) */}
-            <div className="flex-1 lg:flex-[2] min-h-[300px]">
-                <CupolaView 
-                    datasetId="1Vgo4n2MUqNzl8pZ_enSFpTm6S7BD-KxI"
-                    selectedLat={selectedNode?.coordinates.lat}
-                    selectedLng={selectedNode?.coordinates.lng}
-                    selectedZoom={selectedNode?.zoom} 
-                />
+            <div className="flex-1 lg:flex-[2] min-h-[300px] flex flex-col">
+                <div className="flex-1 rounded-xl overflow-hidden shadow-2xl border border-slate-600/30 bg-black">
+                    <CupolaView 
+                        datasetId="1Vgo4n2MUqNzl8pZ_enSFpTm6S7BD-KxI"
+                        selectedLat={selectedNode?.coordinates.lat}
+                        selectedLng={selectedNode?.coordinates.lng}
+                        selectedZoom={selectedNode?.zoom} 
+                    />
+                </div>
             </div>
 
             {/* The Agent (The Storyteller) */}

@@ -66,51 +66,41 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full bg-black rounded-xl overflow-hidden shadow-2xl border-4 border-space-800 group select-none">
+    <div className="relative w-full h-full bg-slate-900 rounded-lg overflow-hidden group select-none">
       
       {/* --- A2A ALLSTAR LOADING SCREEN --- */}
       <div 
-        className={`absolute inset-0 z-[60] bg-space-900 flex items-center justify-center transition-opacity duration-700 pointer-events-none ${isLoading ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute inset-0 z-[60] bg-slate-900 flex items-center justify-center transition-opacity duration-700 pointer-events-none ${isLoading ? 'opacity-100' : 'opacity-0'}`}
       >
          <div className="relative flex flex-col items-center">
-             {/* The A2A Star / Pyramid Logo Animation */}
-             <div className="relative w-24 h-24 animate-[spin_8s_linear_infinite]">
-                 {/* Outer Triangle */}
-                 <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full drop-shadow-[0_0_15px_rgba(212,175,55,0.6)]">
-                    <path d="M50 5 L95 90 H5 Z" fill="none" stroke="#d4af37" strokeWidth="2" className="animate-pulse" />
+             {/* Elegant Loader: Rotating A2A Star */}
+             <div className="relative w-16 h-16 animate-spin-slow duration-[10s]">
+                 <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+                    <path d="M50 5 L95 90 H5 Z" fill="none" stroke="#d4af37" strokeWidth="1.5" />
+                    <path d="M50 5 L95 90 H5 Z" fill="none" stroke="#64748b" strokeWidth="1" className="rotate-180 origin-center scale-75" />
                  </svg>
-                 {/* Inner Inverted Triangle */}
-                 <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full rotate-180 scale-75 drop-shadow-[0_0_15px_rgba(0,240,255,0.6)]">
-                    <path d="M50 5 L95 90 H5 Z" fill="none" stroke="#00f0ff" strokeWidth="3" className="animate-pulse delay-75" />
-                 </svg>
-                 {/* Center Core */}
-                 <div className="absolute inset-0 flex items-center justify-center">
-                     <div className="w-4 h-4 bg-white rounded-full shadow-[0_0_20px_white] animate-ping"></div>
-                 </div>
              </div>
              
-             <div className="mt-8 font-mono text-a2a-gold text-xs tracking-[0.5em] animate-pulse">
-                 CALIBRATING VIEWPORT
+             <div className="mt-6 font-sans text-slate-400 text-[10px] tracking-[0.3em] uppercase">
+                 Calibrating Instruments
              </div>
          </div>
       </div>
 
       {/* --- LAYER 1: BASE SATELLITE (The "Real" World) --- */}
-      {/* pointer-events-none ensures the user CANNOT pan/zoom manually, keeping layers synced */}
       <div className="absolute inset-0 z-0 pointer-events-none">
          <iframe 
             key="sat-layer"
             src={satelliteMapUrl}
             width="100%" 
             height="100%" 
-            style={{ border: 0, filter: 'contrast(1.1) brightness(0.8)' }}
+            style={{ border: 0, filter: 'contrast(1.05) saturate(0.9)' }}
             allowFullScreen
             title="Satellite View"
         ></iframe>
       </div>
 
       {/* --- LAYER 2: ARTIST OVERLAY (The "Heaven on Earth" Vision) --- */}
-      {/* pointer-events-none ensures the user CANNOT pan/zoom manually, keeping layers synced */}
       <div 
         className="absolute inset-0 z-10 pointer-events-none transition-opacity duration-300"
         style={{ 
@@ -132,11 +122,11 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
 
       {/* --- SLIDER HANDLE (Visual) --- */}
       <div 
-        className="absolute top-0 bottom-0 z-20 w-1 bg-a2a-accent cursor-ew-resize shadow-[0_0_15px_#00f0ff] flex items-center justify-center pointer-events-none"
+        className="absolute top-0 bottom-0 z-20 w-px bg-white/50 cursor-ew-resize flex items-center justify-center pointer-events-none backdrop-blur-sm"
         style={{ left: `${sliderPosition}%` }}
       >
-          <div className="w-8 h-8 bg-black border-2 border-a2a-accent rounded-full flex items-center justify-center shadow-lg transform transition-transform duration-100 active:scale-110">
-              <svg className="w-4 h-4 text-a2a-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8M8 17h8M12 7v10" /></svg>
+          <div className="w-6 h-12 bg-white/90 rounded flex items-center justify-center shadow-lg border border-slate-300">
+              <svg className="w-3 h-3 text-slate-600" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/><path d="M16 5v14l-11-7z"/></svg>
           </div>
       </div>
 
@@ -160,21 +150,21 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
         onTouchStart={(e) => e.stopPropagation()}
       >
           
-          <div className="bg-black/80 backdrop-blur-md border border-space-600 p-3 rounded-lg shadow-xl w-64">
-              <div className="text-[10px] font-mono text-a2a-accent mb-2 uppercase tracking-widest text-center border-b border-space-700 pb-1">
-                  Chronoscope Controls
+          <div className="bg-slate-900/90 backdrop-blur border border-slate-700 p-4 rounded shadow-xl w-56">
+              <div className="text-[9px] font-sans text-gold-500 mb-3 uppercase tracking-widest font-bold border-b border-slate-700 pb-2">
+                  Layer Control
               </div>
               
-              <div className="space-y-3">
-                  <div className="flex justify-between text-[10px] text-gray-400">
-                      <span>ARTIST VISION</span>
-                      <span>REALITY</span>
+              <div className="space-y-4">
+                  <div className="flex justify-between text-[9px] text-slate-400 font-sans tracking-wide">
+                      <span>NARRATIVE MAP</span>
+                      <span>SATELLITE</span>
                   </div>
 
                   {/* Opacity Control */}
-                  <div className="flex flex-col gap-1">
-                      <div className="flex justify-between text-[10px] text-a2a-gold">
-                          <span>OVERLAY OPACITY</span>
+                  <div className="flex flex-col gap-1.5">
+                      <div className="flex justify-between text-[9px] text-slate-300">
+                          <span>Map Opacity</span>
                           <span>{artistOpacity}%</span>
                       </div>
                       <input 
@@ -183,7 +173,7 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
                         max="100" 
                         value={artistOpacity}
                         onChange={(e) => setArtistOpacity(parseInt(e.target.value))}
-                        className="w-full h-1 bg-space-700 rounded-lg appearance-none cursor-pointer accent-a2a-gold relative z-[101]"
+                        className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-gold-500 relative z-[101]"
                       />
                   </div>
               </div>
@@ -191,36 +181,29 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
       </div>
 
       {/* --- COPYRIGHT WATERMARK --- */}
-      <div className="absolute bottom-2 left-2 z-30 pointer-events-none">
-         <div className="bg-black/50 backdrop-blur-sm px-2 py-1 rounded border border-white/10">
-             <p className="text-[10px] text-gray-400 font-mono">
-                 © 2021-2025 Bradly Couch | Astronaut Resilience | Heritage Preservation
+      <div className="absolute bottom-3 left-3 z-30 pointer-events-none">
+         <div className="bg-slate-900/70 backdrop-blur-sm px-3 py-1.5 rounded border border-slate-700/50">
+             <p className="text-[10px] text-slate-400 font-sans tracking-wide">
+                 <span className="text-gold-500 font-bold">A2A WORLD</span> | Open Research Initiative | Apache 2.0
              </p>
          </div>
       </div>
 
-      {/* Cupola Window Frame Overlay (Visuals) */}
-      <div className="absolute inset-0 z-20 pointer-events-none">
-        <div className="absolute inset-0" style={{
-            background: `radial-gradient(circle at center, transparent 60%, rgba(11, 13, 23, 0.3) 70%, #0b0d17 100%)`
-        }}></div>
-        
-        {/* HUD Elements - Static Coordinates */}
-        {selectedLat !== undefined && (
-          <div className="absolute top-4 right-4 text-right pointer-events-auto z-50">
-              <div className="inline-block bg-black/70 backdrop-blur-md border border-a2a-accent/30 p-2 rounded text-a2a-accent font-mono text-xs">
-                  <div className="flex items-center justify-end gap-2 mb-1">
-                      <span className="w-2 h-2 rounded-full bg-a2a-accent animate-pulse"></span>
-                      <span>ORBITAL VIEW</span>
-                  </div>
-                  <div className="text-gray-400">
-                      {selectedLat.toFixed(4)}° N <br/>
-                      {selectedLng?.toFixed(4)}° E
-                  </div>
-              </div>
-          </div>
-        )}
-      </div>
+      {/* HUD Elements - Static Coordinates */}
+      {selectedLat !== undefined && (
+        <div className="absolute top-4 right-4 text-right pointer-events-auto z-50">
+            <div className="inline-block bg-slate-900/80 backdrop-blur border border-slate-700 p-2 rounded text-slate-300 font-mono text-[10px]">
+                <div className="flex items-center justify-end gap-2 mb-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                    <span className="tracking-widest">LIVE FEED</span>
+                </div>
+                <div className="text-slate-400">
+                    LAT: {selectedLat.toFixed(5)}<br/>
+                    LNG: {selectedLng?.toFixed(5)}
+                </div>
+            </div>
+        </div>
+      )}
     </div>
   );
 };
