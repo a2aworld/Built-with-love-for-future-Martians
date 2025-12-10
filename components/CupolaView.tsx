@@ -41,9 +41,6 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
   // Base URL for the artist's map
   const artistBaseUrl = `https://www.google.com/maps/d/embed?mid=${datasetId}&ehbc=2E312F`;
   
-  // Base URL for Standard Satellite (using simple embed structure)
-  const satelliteBaseUrl = `https://maps.google.com/maps?t=k&output=embed`;
-
   useEffect(() => {
     // Trigger loading state whenever coordinates change
     setIsLoading(true);
@@ -59,20 +56,25 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
       
       // MOBILE FIX: Pull the camera back on small screens so large shapes (like Ganesha) fit.
       if (isMobile) {
-          zoom = Math.max(2, zoom - 1.5); 
+          // IMPORTANT: Google Maps Legacy Embed requires INTEGER zoom levels.
+          // Decimals (e.g. 7.5) can cause the map to fail/render gray.
+          // We subtract 2 and ensure it's an integer.
+          zoom = Math.max(2, Math.floor(zoom - 2)); 
       }
     } else {
-      targetLat = 20;
-      targetLng = 0;
-      zoom = 2;
+      // Default to Ganesha if nothing selected (Safety Fallback)
+      targetLat = 40.217;
+      targetLng = 43.667;
+      zoom = 9;
     }
 
     // Update Artist Map URL
     const newArtistUrl = `${artistBaseUrl}&ll=${targetLat},${targetLng}&z=${zoom}`;
     setArtistMapUrl(newArtistUrl);
 
-    // Update Satellite Map URL
-    const newSatUrl = `${satelliteBaseUrl}&q=${targetLat},${targetLng}&z=${zoom}`;
+    // ROLLBACK: Using the Classic 'll' param format. 
+    // This is the version that worked perfectly before the 'loc:' experiment.
+    const newSatUrl = `https://maps.google.com/maps?ll=${targetLat},${targetLng}&z=${zoom}&t=k&output=embed`;
     setSatelliteMapUrl(newSatUrl);
     
     // Fallback: If map loads instantly or fails, clear loader after 3s max
@@ -119,11 +121,11 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
       </div>
 
       {/* --- LAYER 1: BASE SATELLITE (The "Real" World) --- */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-black">
          <iframe 
             key={`sat-layer-${isMobile ? 'mob' : 'desk'}`} // Key change forces reload on resize to apply new zoom
             src={satelliteMapUrl}
-            style={{ ...cropHeaderStyle, filter: 'contrast(1.05) saturate(0.9)' }}
+            style={{ ...cropHeaderStyle, filter: 'contrast(1.1) saturate(0.8) brightness(0.9)' }}
             allowFullScreen
             title="Satellite View"
         ></iframe>
@@ -170,9 +172,9 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
       />
 
       {/* --- MINIMALIST CONTROLS (Bottom Right) --- */}
-      {/* Replaced bulky panel with sleek individual sliders */}
+      {/* Added bottom padding for mobile to clear the Nav Bar */}
       <div 
-        className="absolute bottom-4 right-4 z-[100] flex flex-col gap-1 items-end pointer-events-auto"
+        className="absolute bottom-24 md:bottom-4 right-4 z-[100] flex flex-col gap-1 items-end pointer-events-auto"
         onMouseDown={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
       >
@@ -193,10 +195,13 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
       </div>
 
       {/* --- COPYRIGHT WATERMARK --- */}
-      <div className="absolute bottom-3 left-3 z-30 pointer-events-none">
-         <div className="bg-slate-900/70 backdrop-blur-sm px-3 py-1.5 rounded border border-slate-700/50">
+      {/* Mobile: Top-Left | Desktop: Bottom-Left */}
+      {/* Z-Index increased to 50 to ensure it's visible but below interactive controls */}
+      <div className="absolute top-3 left-3 md:top-auto md:bottom-3 z-50 pointer-events-none">
+         <div className="bg-slate-900/70 backdrop-blur-sm px-3 py-1.5 rounded border border-slate-700/50 shadow-lg">
              <p className="text-[10px] text-slate-400 font-sans tracking-wide">
-                 <span className="text-gold-500 font-bold">A2A WORLD</span> | Open Research Initiative | Apache 2.0
+                 <span className="text-gold-500 font-bold">A2A WORLD</span> | <span className="hidden sm:inline">Open Research Initiative |</span> Apache 2.0
+                 <span className="block text-[8px] text-slate-500 mt-0.5">Astronaut Resilience | Heritage Preservation</span>
              </p>
          </div>
       </div>

@@ -66,7 +66,7 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-900 text-paper-200 relative font-sans">
+    <div className="flex flex-col h-[100dvh] w-screen overflow-hidden bg-slate-900 text-paper-200 relative font-sans">
       
       {/* Background: Subtle Professional Gradient */}
       <div className="absolute inset-0 pointer-events-none z-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"></div>
