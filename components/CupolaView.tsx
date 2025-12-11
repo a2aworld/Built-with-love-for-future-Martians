@@ -200,7 +200,7 @@ export const CupolaView: React.FC<CupolaViewProps> = ({
       <div className="absolute top-3 left-3 md:top-auto md:bottom-3 z-50 pointer-events-none">
          <div className="bg-slate-900/70 backdrop-blur-sm px-3 py-1.5 rounded border border-slate-700/50 shadow-lg">
              <p className="text-[10px] text-slate-400 font-sans tracking-wide">
-                 <span className="text-gold-500 font-bold">A2A WORLD</span> | <span className="hidden sm:inline">Open Research Initiative |</span> Apache 2.0
+                 <span className="text-gold-500 font-bold">A2A WORLD</span> | <span className="hidden sm:inline">Open Research Initiative |</span> CC BY 4.0
                  <span className="block text-[8px] text-slate-500 mt-0.5">Astronaut Resilience | Heritage Preservation</span>
              </p>
          </div>

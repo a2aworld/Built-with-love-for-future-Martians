@@ -3,7 +3,7 @@
 
 > **"As Above, So Below"** — A psychological resilience tool for the interplanetary era.
 
-![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
+![License](https://img.shields.io/badge/license-CC%20BY%204.0-blue.svg)
 ![Status](https://img.shields.io/badge/status-Research%20Preview-green.svg)
 ![AI](https://img.shields.io/badge/AI-Gemini%203%20Pro-gold.svg)
 
@@ -12,6 +12,16 @@
 The **Galactic Storybook** is a "Cockpit of Culture" designed for long-duration spaceflight. It serves as a psychological anchor for astronauts, combating the "Overview Effect" detachment and sensory monotony of deep space travel.
 
 By overlaying ancient mythological narratives onto high-resolution Earth observation data, we transform the planet into a living library. This tool allows future Martians to connect with their heritage, ensuring the stories of Earth are preserved not just in text, but in the very geography of the home world.
+
+## 📜 Competition Compliance & Methodology
+
+**License**: In accordance with Competition Rule 2.5.a, this entire Submission (code, curated data, and methodology) is licensed under **CC BY 4.0**.
+
+**Methodology (Rule 2.5.b)**:
+1.  **Geomythological Mapping**: We utilize a custom dataset (`constants.ts`) manually curated to map specific Earth coordinates to corresponding mythological narratives ("As Above, So Below").
+2.  **Narrative Synthesis**: We employ **Gemini 3 Pro** via the Google GenAI SDK to act as a "Keeper of Heritage," dynamically generating oral-tradition style retellings based on the static coordinate data.
+3.  **Iconographic Generation**: We utilize **Gemini 3 Pro Image** to generate high-fidelity, culturally accurate artistic representations of the myths, functioning as a "Cosmic Iconographer."
+4.  **External Data (Rule 2.6)**: The "Curated Heaven on Earth Database" included in this submission is original External Data created by the team and is hereby made publicly available under CC BY 4.0 for use by all.
 
 ## 🛠️ Tech Stack
 
@@ -56,7 +66,7 @@ To deploy this application publicly so others can use it without needing their o
 
 ## 📜 License
 
-This project is open source and available under the **Apache License 2.0**.
+This project is licensed under **Creative Commons Attribution 4.0 International (CC BY 4.0)**.
 
 ---
 *A2A World Research Initiative | Astronaut Resilience | Heritage Preservation*

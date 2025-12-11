@@ -72,7 +72,7 @@ export const DataPanel: React.FC<DataPanelProps> = ({ onSelectNode, selectedNode
       
       <div className="p-4 border-t border-slate-700/50 bg-slate-900/30">
         <div className="text-[10px] text-slate-500 font-sans text-center leading-relaxed">
-          <span className="font-semibold text-slate-400">Open Source | Apache 2.0</span>
+          <span className="font-semibold text-slate-400">License: CC BY 4.0</span>
           <br/>
           <span className="italic">Astronaut Resilience | Heritage Preservation</span>
           <br/>
