@@ -1,5 +1,5 @@
 
-# 🌟 A2A World: The Galactic Storybook
+# 🌟 A2A World | Galactic Storybook
 
 > **"As Above, So Below"** — A psychological resilience tool for the interplanetary era.
 
