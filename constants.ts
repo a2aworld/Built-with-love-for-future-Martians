@@ -17,8 +17,21 @@ export const STORY_NODES: StoryNode[] = [
     culturalContext: 'Symbolizes intellect conquering ego. Ganesha writes the destiny of the cosmos.',
     visualCue: 'Look for the elephantine ridge formation.'
   },
+
+  // 2. VEDIC SAMPLE (Narasimha)
+  {
+    id: 'narasimha',
+    title: 'Narasimha',
+    category: 'Vedic',
+    datasetOrigin: 'Hindu (1).csv',
+    coordinates: { lat: 35.56862515854041, lng: 53.75416837733463 },
+    zoom: 11,
+    description: 'The Fourth Avatar of Vishnu: The Ugra (Fierce) Narasimha. He is the Great Protector who transcends boundaries.',
+    culturalContext: 'The destruction of Hiranyakashipu. By appearing as neither man nor beast, at twilight, and on a threshold, Narasimha bypasses the demon\'s boon to restore Cosmic Order (Dharma).',
+    visualCue: 'Traditional Vedic iconography: Narasimha with a lion face and human torso, seated with the demon Hiranyakashipu across his lap, tearing his chest to protect the devotee Prahlada.'
+  },
   
-  // 2. CLASSICAL SAMPLE (Venus)
+  // 3. CLASSICAL SAMPLE (Venus)
   {
     id: 'venus-de-milo',
     title: 'Venus de Milo',
@@ -31,7 +44,7 @@ export const STORY_NODES: StoryNode[] = [
     visualCue: 'Graceful, feminine coastline curves.'
   },
 
-  // 3. CLASSICAL SAMPLE (Pegasus)
+  // 4. CLASSICAL SAMPLE (Pegasus)
   {
     id: 'pegasus',
     title: 'Pegasus',
@@ -44,7 +57,7 @@ export const STORY_NODES: StoryNode[] = [
     visualCue: 'Winged equine shape.'
   },
 
-  // 4. COSMIC SAMPLE (Constellation)
+  // 5. COSMIC SAMPLE (Toucana)
   {
     id: 'toucana',
     title: 'Toucana',
@@ -57,7 +70,7 @@ export const STORY_NODES: StoryNode[] = [
     visualCue: 'Bird with large beak.'
   },
 
-  // 5. COSMIC SAMPLE (Dragon)
+  // 6. COSMIC SAMPLE (Dragon)
   {
     id: 'chinese-dragon',
     title: 'Chinese Dragon',
@@ -81,7 +94,7 @@ Task:
 1. Retell the ancient myth associated with the location and subject provided.
 2. Use the tone, rhythm, and style of the original oral tradition (e.g., Vedic, Biblical, Homeric, Egyptian).
 3. Connect the story to the visual landscape below (using the visual cues) as if reading the story from the Earth itself.
-4. Your goal is pure preservation of the narrative.
+4. Your goal is pure preservation. For fierce or wrathful deities like Narasimha, do not shy away from traditional depictions of divine violence, such as the slaying of the demon across the lap, as this is central to the iconographic truth found in the ancient texts and the Earth itself.
 
 Keep it under 150 words. Be solemn, majestic, and accurate to the source material.
 `;

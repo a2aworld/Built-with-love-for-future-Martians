@@ -74,7 +74,7 @@ export const DataPanel: React.FC<DataPanelProps> = ({ onSelectNode, selectedNode
         <div className="text-[10px] text-slate-500 font-sans text-center leading-relaxed">
           <span className="font-semibold text-slate-400">License: CC BY 4.0</span>
           <br/>
-          <span className="italic">MVP Dataset | 5 of 100+ Nodes Available</span>
+          <span className="italic">MVP Dataset | 6 of 100+ Nodes Available</span>
           <br/>
           <div className="flex justify-center items-center gap-1.5 mt-2 opacity-60">
              <span>Powered by</span>

@@ -1,58 +1,44 @@
+
 import { GoogleGenAI } from "@google/genai";
 import { SYSTEM_INSTRUCTION } from "../constants";
 import { StoryNode, AgentResponse } from "../types";
 
 /**
  * Service singleton for the Google Gemini API client.
- * In Production/Public mode, this relies on the environment variable being set
- * in the deployment platform (e.g., Google Cloud Run, Vercel) and injected via server.js.
  */
 let client: GoogleGenAI | null = null;
 
 /**
  * Initializes the Gemini API client using the environment's injected API key.
- * 
- * @returns {boolean} True if initialization was successful, false otherwise.
  */
 export const initializeGemini = (): boolean => {
   try {
-    // 1. Try Runtime Injection (from server.js -> index.html -> window.env)
-    // This is the standard path for Cloud Run / Production
     if (typeof window !== 'undefined' && window.env && window.env.API_KEY) {
-        // Sanity Check: Is it a placeholder?
         if (window.env.API_KEY.includes('your_google_gemini_api_key')) {
-            console.warn("API Key is still the default placeholder.");
             return false;
         }
         client = new GoogleGenAI({ apiKey: window.env.API_KEY });
         return true;
     }
 
-    // 2. Fallback to build-time env (for local dev)
     if (process.env.API_KEY) {
       client = new GoogleGenAI({ apiKey: process.env.API_KEY });
       return true;
     }
     
-    console.warn("Gemini API Key is missing. Please check your deployment environment variables.");
     return false;
   } catch (e) {
-    console.error("Failed to initialize Gemini client", e);
     return false;
   }
 };
 
 /**
  * Generates the narrative text for a specific story node.
- * Uses Gemini 3 Pro to weave the ancient myth.
- * 
- * @param {StoryNode} node - The selected geographical/mythological node.
- * @returns {Promise<string>} The generated narrative text.
  */
 const generateText = async (node: StoryNode): Promise<string> => {
     if (!client) {
        const success = initializeGemini();
-       if (!success) return "Connection Lost. Please contact Mission Control (Check API_KEY configuration in Cloud Run).";
+       if (!success) return "Connection Lost. Please contact Mission Control.";
     }
     
     const prompt = `
@@ -68,7 +54,7 @@ const generateText = async (node: StoryNode): Promise<string> => {
     try {
         // @ts-ignore
         const response = await client.models.generateContent({
-          model: 'gemini-3-pro-preview', // User requested Gemini 3 Pro
+          model: 'gemini-3-pro-preview',
           config: {
             systemInstruction: SYSTEM_INSTRUCTION,
             temperature: 0.7, 
@@ -79,41 +65,38 @@ const generateText = async (node: StoryNode): Promise<string> => {
         return response.text || "The Archives are silent.";
     } catch (e) {
         console.error("Text Generation Error:", e);
-        return "Transmission Interrupted. (Check API Quota or Key Validity)";
+        return "Transmission Interrupted.";
     }
 };
 
 /**
- * Generates a high-fidelity visualization of the myth.
- * Uses Gemini 3 Pro Image to create "Artistic Masterpieces".
- * 
- * @param {StoryNode} node - The selected geographical/mythological node.
- * @returns {Promise<string | undefined>} Base64 encoded image string or undefined if generation fails.
+ * Generates a high-fidelity visualization of the myth using Chronoscope parameters.
  */
 const generateImage = async (node: StoryNode): Promise<string | undefined> => {
     if (!client) return undefined;
 
-    // Prompt Engineering: Focus on "Artistic Masterpiece" / "Iconography".
-    // Instruction ensures the AI acts as a 'Cosmic Iconographer'.
+    // Prompt Engineering: Focus on Sacred Iconography and traditional depictions.
     const prompt = `
-    Create a stunning, intricate, high-fidelity artistic masterpiece of: ${node.title}.
-    Context: Ancient mythology encoded into the Earth at Latitude: ${node.coordinates.lat}, Longitude: ${node.coordinates.lng}.
+    Create a stunning, intricate, high-fidelity traditional iconographic masterpiece of: ${node.title}.
+    Context: Ancient mythology encoded into the Earth. This is a sacred artifact for the "Galactic Storybook".
     
     Visual Style: 
-    - A magnificent, museum-quality iconographic drawing or painting.
-    - Vivid, rich colors appropriate to the culture and subject (e.g., Lapis Lazuli for Egyptian, vibrant Ochre/Red for Vedic, Fresco styles for Classical).
-    - Intricate linework, divine proportions, majestic composition.
-    - Visually stunning work of art that correlates to the subject matter (${node.visualCue}).
-    - NOT a map overlay. A standalone artifact of the "Galactic Storybook".
+    - Authentic traditional iconography (e.g., Vedic Thangka or Murti style, Byzantine fresco, Egyptian papyrus).
+    - Capture the specific mythological moment: ${node.visualCue}.
+    - If the subject is Narasimha, depict the traditional iconographic scene with total accuracy: the lion-headed avatar with the demon king Hiranyakashipu across his lap, being slain at the threshold. This is a sacred, symbolic act of protection and dharma.
+    - Vivid, rich colors (Lapis, Gold, Ochre, Crimson).
+    - Intricate patterns, divine geometry, and majestic composition.
+    - Museum-quality, dignified, and majestic.
+    - DO NOT MORPH WITH A MOUNTAIN. This must be a clean, traditional work of art.
     
     Aspect Ratio: 16:9.
-    Quality: 8k resolution style, cinematic, majestic.
+    Quality: 8k resolution style, cinematic lighting, profound textures.
     `;
 
     try {
         // @ts-ignore
         const response = await client.models.generateContent({
-            model: 'gemini-3-pro-image-preview', // High quality image generation
+            model: 'gemini-3-pro-image-preview',
             contents: {
                 parts: [{ text: prompt }]
             },
@@ -125,7 +108,6 @@ const generateImage = async (node: StoryNode): Promise<string | undefined> => {
             }
         });
 
-        // Extract image data from the response parts
         // @ts-ignore
         for (const part of response.candidates?.[0]?.content?.parts || []) {
             if (part.inlineData) {
@@ -140,24 +122,13 @@ const generateImage = async (node: StoryNode): Promise<string | undefined> => {
 };
 
 /**
- * Orchestrates the full agent response (Text + Image).
- * Runs generation in parallel for "Vibe Coding" speed.
- * 
- * @param {StoryNode} node - The selected node.
- * @returns {Promise<AgentResponse>} The combined response object.
+ * Orchestrates the full agent response.
  */
 export const generateStoryResponse = async (node: StoryNode): Promise<AgentResponse> => {
   if (!client) {
-    const success = initializeGemini();
-    if (!success) {
-        return {
-            text: "System Alert: API Key not detected. Please verify your Cloud Run 'Variables' settings.",
-            emotionalTone: 'Analytical'
-        };
-    }
+    initializeGemini();
   }
 
-  // Parallel execution to minimize latency
   const [text, imageUrl] = await Promise.all([
       generateText(node),
       generateImage(node)
