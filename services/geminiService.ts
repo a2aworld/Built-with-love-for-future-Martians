@@ -54,7 +54,7 @@ const generateText = async (node: StoryNode): Promise<string> => {
     try {
         // @ts-ignore
         const response = await client.models.generateContent({
-          model: 'gemini-3-pro-preview',
+          model: 'gemini-3.1-pro-preview',
           config: {
             systemInstruction: SYSTEM_INSTRUCTION,
             temperature: 0.7, 
